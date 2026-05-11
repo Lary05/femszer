@@ -1,0 +1,143 @@
+/* style.css - Custom styling enhancements over Tailwind CSS */
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Custom modern scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Fluid hover transition for table rows */
+tbody tr {
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Status Indicator Animation for 'Jelen van' */
+@keyframes pulse-soft {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.status-active {
+    animation: pulse-soft 2s infinite ease-in-out;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Nyomtatási (PDF) nézet beállításai                                        */
+/* ------------------------------------------------------------------------- */
+@media print {
+
+    /* Elrejtünk mindent a háttérben */
+    body * {
+        visibility: hidden;
+    }
+
+    /* A modal tartalma és színei viszont legyenek láthatóak */
+    #modal-worker-profile-content,
+    #modal-worker-profile-content * {
+        visibility: visible;
+        print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
+    }
+
+    /* A modal rögzítésének és görgetésének feloldása */
+    #modal-worker-profile-content {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        transform: scale(0.95) !important;
+        transform-origin: top left !important;
+    }
+
+    #modal-worker-profile-content .overflow-y-auto {
+        overflow: visible !important;
+    }
+
+    #btn-close-wp-modal,
+    #btn-print-profile {
+        display: none !important;
+    }
+
+    /* Fekvő A4-es oldal alapértelmezettként */
+    @page {
+        margin: 5mm;
+        size: landscape;
+    }
+
+    /* --- TÖMEGES PDF NYOMTATÁS EXTRÁK --- */
+    body.batch-printing #app-dashboard,
+    body.batch-printing #login-screen,
+    body.matrix-printing #app-dashboard,
+    body.matrix-printing #login-screen,
+    body.travel-printing #app-dashboard,
+    body.travel-printing #login-screen {
+        display: none !important;
+    }
+
+    body.batch-printing #batch-print-container,
+    body.batch-printing #batch-print-container *,
+    body.matrix-printing #batch-print-container,
+    body.matrix-printing #batch-print-container *,
+    body.travel-printing #batch-print-container,
+    body.travel-printing #batch-print-container * {
+        visibility: visible;
+        print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
+    }
+
+    body.batch-printing #batch-print-container,
+    body.matrix-printing #batch-print-container,
+    body.travel-printing #batch-print-container {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        display: block !important;
+        transform: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* OLDALTÖRÉS PARANCS */
+    .page-break {
+        page-break-after: always;
+        break-after: page;
+    }
+}

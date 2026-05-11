@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FÉMSZER KFT - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <div id="login-screen"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1
+                    class="text-3xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500 mb-2">
+                    FÉMSZER KFT</h1>
+                <p class="text-gray-500 font-medium">Adminisztrációs Rendszer</p>
+            </div>
+            <form id="login-form">
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><i
+                            class="fas fa-envelope text-gray-400 mr-1"></i> Email cím</label>
+                    <input type="email" id="login-email" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-gray-50 focus:bg-white">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><i
+                            class="fas fa-lock text-gray-400 mr-1"></i> Jelszó</label>
+                    <input type="password" id="login-password" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-gray-50 focus:bg-white">
+                </div>
+                <button type="submit" id="btn-login"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all flex justify-center items-center h-[50px]">
+                    Belépés
+                </button>
+            </form>
+            <div class="text-center mt-5">
+                <button type="button" id="btn-forgot-password"
+                    class="text-sm text-blue-600 hover:text-blue-800 font-semibold transition-colors">
+                    Elfelejtetted a jelszavad? Új jelszó kérése
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-dashboard" class="hidden h-screen w-full flex overflow-hidden">
+
+        <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-2xl z-10 transition-all duration-300">
+            <div class="h-20 flex items-center justify-center border-b border-gray-800 flex-shrink-0">
+                <h1
+                    class="text-2xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+                    FÉMSZER KFT</h1>
+            </div>
+            <nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+                <a href="#" id="menu-attendance"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-600 text-white shadow-lg shadow-blue-500/30 transition-all">
+                    <i class="fas fa-calendar-check text-lg w-6 text-center"></i>
+                    <span class="font-medium">Jelenléti Ív</span>
+                </a>
+                <a href="#" id="menu-employees"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all group">
+                    <i class="fas fa-users text-lg w-6 text-center group-hover:text-blue-400 transition-colors"></i>
+                    <span class="font-medium">Dolgozók Kezelése</span>
+                </a>
+                <a href="#" id="menu-absences"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all group">
+                    <i
+                        class="fas fa-user-clock text-lg w-6 text-center group-hover:text-blue-400 transition-colors"></i>
+                    <span class="font-medium">Távollétek Kezelése</span>
+                </a>
+                <a href="#" id="menu-warnings"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all group">
+                    <i id="menu-warning-icon"
+                        class="fas fa-exclamation-triangle text-lg w-6 text-center group-hover:text-amber-500 transition-colors"></i>
+                    <span class="font-medium">Figyelmeztetések</span>
+                </a>
+
+                <div class="border-t border-gray-800 my-4"></div>
+
+                <button id="menu-exports"
+                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-file-export w-5 text-center group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium">Exportálások</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                </button>
+                <button id="menu-guide"
+                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group mt-2">
+                    <div class="flex items-center gap-3">
+                        <i
+                            class="fas fa-book-open w-5 text-center text-blue-400 group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium text-blue-100">Használati Útmutató</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-gray-800 flex-shrink-0">
+                <button id="btn-logout"
+                    class="w-full flex items-center justify-center px-4 py-2.5 rounded-xl text-red-400 hover:text-white hover:bg-red-500/20 transition-all group mb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-sign-out-alt text-center group-hover:scale-110 transition-transform"></i>
+                        <span class="font-medium text-sm">Kijelentkezés</span>
+                    </div>
+                </button>
+                <div class="text-xs text-gray-500 text-center uppercase tracking-widest">&copy; 2026 Admin Panel</div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+            <header
+                class="h-20 bg-white shadow-sm flex items-center justify-between px-8 border-b border-gray-100 z-0 flex-shrink-0">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800" id="header-title">Mai Napi Jelenlét</h2>
+                    <p class="text-sm text-gray-500 mt-1" id="current-date">Dátum betöltése...</p>
+                </div>
+            </header>
+
+            <div class="p-8 flex-1 overflow-y-auto w-full max-w-[1600px] mx-auto">
+
+                <div id="view-attendance" class="block">
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex flex-col xl:flex-row items-center justify-between gap-4 relative">
+                        <div
+                            class="flex items-center bg-gray-100 p-1 rounded-xl w-full xl:w-auto overflow-hidden self-start xl:self-auto xl:absolute xl:left-4">
+                            <button id="btn-view-daily"
+                                class="flex-1 xl:flex-none px-6 py-2 rounded-lg bg-white text-blue-600 font-bold shadow-sm transition-all focus:outline-none text-sm">Napi</button>
+                            <button id="btn-view-weekly"
+                                class="flex-1 xl:flex-none px-6 py-2 rounded-lg text-gray-500 hover:text-gray-700 font-medium transition-all focus:outline-none text-sm">Heti</button>
+                            <button id="btn-view-monthly-all"
+                                class="flex-1 xl:flex-none px-6 py-2 rounded-lg text-gray-500 hover:text-gray-700 font-medium transition-all focus:outline-none text-sm">Havi
+                                Összes</button>
+                        </div>
+
+                        <div id="attendance-date-nav"
+                            class="flex flex-1 items-center justify-center gap-4 w-full xl:w-auto mx-auto transition-opacity duration-300">
+                            <button id="btn-prev-day"
+                                class="text-gray-500 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 font-medium">
+                                <i class="fas fa-chevron-left"></i> <span id="label-prev-nav"
+                                    class="hidden sm:inline">Előző</span>
+                            </button>
+                            <div class="flex flex-col items-center">
+                                <label for="attendance-date" id="label-attendance-date"
+                                    class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Dátum
+                                    kiválasztása</label>
+                                <input type="date" id="attendance-date" onclick="this.showPicker()"
+                                    class="px-4 py-2 border border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-medium text-gray-700 bg-gray-50 text-center cursor-pointer transition-all">
+                            </div>
+                            <button id="btn-next-day"
+                                class="text-gray-500 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 font-medium">
+                                <span id="label-next-nav" class="hidden sm:inline">Következő</span> <i
+                                    class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                            <button id="btn-bulk-edit-action"
+                                class="hidden items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all text-white bg-green-600 hover:bg-green-700 shadow-sm">
+                                <i class="fas fa-pencil-alt"></i> <span id="bulk-edit-count">0</span> kijelölve
+                            </button>
+                            <button id="btn-toggle-bulk-mode"
+                                class="hidden items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 shadow-sm">
+                                <i class="fas fa-check-square"></i> <span>Kijelölés: KI</span>
+                            </button>
+                            <button id="btn-toggle-edit-mode"
+                                class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all text-gray-500 bg-gray-100 hover:bg-gray-200 border border-gray-200 shadow-sm">
+                                <i class="fas fa-edit"></i> <span>Szerkesztő Mód: KI</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="block">
+                        <div id="attendance-daily-wrapper"
+                            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden block transition-colors">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse min-w-[600px]">
+                                    <thead>
+                                        <tr
+                                            class="bg-gray-50 border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider">
+                                            <th class="py-4 px-6 font-semibold">Név</th>
+                                            <th class="py-4 px-6 font-semibold">Érkezés</th>
+                                            <th class="py-4 px-6 font-semibold">Távozás</th>
+                                            <th class="py-4 px-6 font-semibold">Státusz</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attendance-table-body" class="divide-y divide-gray-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="attendance-weekly-wrapper"
+                            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hidden transition-colors">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse min-w-[1000px]">
+                                    <thead>
+                                        <tr class="bg-gray-50 border-b border-gray-100">
+                                            <th
+                                                class="py-4 px-6 font-bold text-gray-500 uppercase text-xs tracking-wider bg-white sticky left-0 z-10 border-r border-gray-100 w-48 shadow-[1px_0_0_0_#f3f4f6]">
+                                                Név</th>
+                                            <th
+                                                class="py-4 px-4 font-bold text-gray-500 uppercase text-xs tracking-wider text-center border-r border-gray-100">
+                                                Hétfő<br><span id="th-week-1"
+                                                    class="text-[10px] font-normal text-gray-400 mt-1 block"></span>
+                                            </th>
+                                            <th
+                                                class="py-4 px-4 font-bold text-gray-500 uppercase text-xs tracking-wider text-center border-r border-gray-100">
+                                                Kedd<br><span id="th-week-2"
+                                                    class="text-[10px] font-normal text-gray-400 mt-1 block"></span>
+                                            </th>
+                                            <th
+                                                class="py-4 px-4 font-bold text-gray-500 uppercase text-xs tracking-wider text-center border-r border-gray-100">
+                                                Szerda<br><span id="th-week-3"
+                                                    class="text-[10px] font-normal text-gray-400 mt-1 block"></span>
+                                            </th>
+                                            <th
+                                                class="py-4 px-4 font-bold text-gray-500 uppercase text-xs tracking-wider text-center border-r border-gray-100">
+                                                Csütörtök<br><span id="th-week-4"
+                                                    class="text-[10px] font-normal text-gray-400 mt-1 block"></span>
+                                            </th>
+                                            <th
+                                                class="py-4 px-4 font-bold text-gray-500 uppercase text-xs tracking-wider text-center border-r border-gray-100">
+                                                Péntek<br><span id="th-week-5"
+                                                    class="text-[10px] font-normal text-gray-400 mt-1 block"></span>
+                                            </th>
+                                            <th
+                                                class="py-4 px-4 font-bold text-gray-400 uppercase text-xs tracking-wider text-center border-r border-gray-100 bg-gray-50/50">
+                                                Szombat<br><span id="th-week-6"
+                                                    class="text-[10px] font-normal text-gray-300 mt-1 block"></span>
+                                            </th>
+                                            <th
+                                                class="py-4 px-4 font-bold text-gray-400 uppercase text-xs tracking-wider text-center bg-gray-50/50">
+                                                Vasárnap<br><span id="th-week-7"
+                                                    class="text-[10px] font-normal text-gray-300 mt-1 block"></span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attendance-table-weekly-body" class="divide-y divide-gray-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="attendance-monthly-all-wrapper" class="hidden animate-fade-in-up transition-colors">
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col w-full">
+                                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                        <i class="fas fa-table text-blue-500"></i> Havi Összes Jelenléti Mátrix
+                                    </h3>
+                                    <div class="flex items-center gap-3">
+                                        <label for="att-monthly-all-month"
+                                            class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hónap</label>
+                                        <input type="month" id="att-monthly-all-month" onclick="this.showPicker()"
+                                            class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium text-gray-700 bg-gray-50 cursor-pointer w-40">
+                                    </div>
+                                </div>
+                                <div id="att-monthly-all-loading" class="hidden text-center py-16">
+                                    <i class="fas fa-spinner fa-spin text-3xl text-blue-500 mb-3"></i>
+                                    <p class="text-gray-500 font-medium text-sm">Mátrix generálása...</p>
+                                </div>
+                                <div class="overflow-x-auto pb-4">
+                                    <table class="w-full text-left border-collapse" id="att-monthly-all-table">
+                                        <thead id="att-monthly-all-thead"></thead>
+                                        <tbody id="att-monthly-all-tbody" class="divide-y divide-gray-100"></tbody>
+                                    </table>
+                                </div>
+                                <div class="mt-6 pt-5 border-t border-gray-100">
+                                    <h4 class="text-xs font-bold text-gray-400 uppercase mb-3"><i
+                                            class="fas fa-info-circle mr-1"></i> Jelmagyarázat</h4>
+                                    <div id="att-monthly-legend" class="flex flex-wrap gap-2 text-xs"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-employees" class="hidden">
+                    <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div
+                            class="flex items-center space-x-3 bg-white p-2 rounded-lg shadow-sm border border-gray-100">
+                            <span class="text-sm font-medium text-gray-700">Archivált dolgozók mutatása</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggle-archived" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                </div>
+                            </label>
+                        </div>
+                        <button id="btn-new-employee"
+                            class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                            <i class="fas fa-user-plus"></i> Új Dolgozó Felvétele
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[600px]">
+                                <thead>
+                                    <tr
+                                        class="bg-gray-50 border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider">
+                                        <th class="py-4 px-6 font-semibold">Név</th>
+                                        <th class="py-4 px-6 font-semibold">Település (km)</th>
+                                        <th class="py-4 px-6 font-semibold">Kártya Sorszáma</th>
+                                        <th class="py-4 px-6 font-semibold">Státusz</th>
+                                        <th class="py-4 px-6 font-semibold text-center w-32">Műveletek</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employees-table-body" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-absences" class="hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-gray-800">Távollét Rögzítése</h3>
+                            <button type="button" onclick="downloadHungarianHolidays()"
+                                class="text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-colors border border-blue-200">
+                                <i class="fas fa-calendar-plus mr-1"></i> Ünnepnapok Letöltése
+                            </button>
+                        </div>
+                        <form id="form-absence" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                            <div class="md:col-span-1">
+                                <label for="abs-employee" class="block text-sm font-medium text-gray-700 mb-1">Dolgozó
+                                    kiválasztása</label>
+                                <select id="abs-employee" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white">
+                                    <option value="" disabled selected>Válassz dolgozót...</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-1">
+                                <label for="abs-date-start" class="block text-sm font-medium text-gray-700 mb-1">Kezdő
+                                    dátum</label>
+                                <input type="date" id="abs-date-start" required onclick="this.showPicker()"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
+                            </div>
+                            <div class="md:col-span-1">
+                                <label for="abs-date-end"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Végdátum</label>
+                                <input type="date" id="abs-date-end" required onclick="this.showPicker()"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
+                            </div>
+                            <div class="md:col-span-1">
+                                <label for="abs-type" class="block text-sm font-medium text-gray-700 mb-1">Távollét
+                                    Típusa</label>
+                                <select id="abs-type" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                    <option value="Szabadság">Szabadság (SZ)</option>
+                                    <option value="Táppénz">Táppénz (T)</option>
+                                    <option value="Betegszabadság">Betegszabadság (BSZ)</option>
+                                    <option value="Fizetett ünnep">Fizetett ünnep (FÜ)</option>
+                                    <option value="Fizetés nélküli szabadság">Fizetés nélküli szabadság (FN)</option>
+                                    <option value="Igazolt nem fizetett távollét">Igazolt nem fizetett távollét (NF)
+                                    </option>
+                                    <option value="Igazolt fizetett távollét">Igazolt fizetett távollét (IF)</option>
+                                    <option value="Kiküldetés">Kiküldetés (K)</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-1">
+                                <button type="submit"
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-colors flex justify-center items-center gap-2 h-[42px]">
+                                    <i class="fas fa-plus"></i> Rögzítés
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div class="relative w-full md:w-1/3">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i
+                                        class="fas fa-search text-gray-400"></i></div>
+                                <input type="text" id="absences-search"
+                                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-shadow text-sm"
+                                    placeholder="Keresés név vagy típus alapján...">
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm font-medium text-gray-700">Múltbeliek mutatása</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="toggle-past-absences" class="sr-only peer">
+                                    <div
+                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-100 pt-3">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2"><i
+                                    class="fas fa-filter mr-1"></i> Típusok szűrése:</span>
+                            <div class="flex flex-wrap gap-2" id="absence-type-filters"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[600px]">
+                                <thead>
+                                    <tr
+                                        class="bg-gray-50 border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider">
+                                        <th class="py-4 px-6 font-semibold">Dolgozó Neve</th>
+                                        <th class="py-4 px-6 font-semibold">Dátum</th>
+                                        <th class="py-4 px-6 font-semibold">Típus</th>
+                                        <th class="py-4 px-6 font-semibold text-center w-24">Művelet</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="absences-table-body" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-warnings" class="hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-5 border-b border-gray-100 bg-amber-50 flex justify-between items-center">
+                            <h3 class="font-bold text-amber-800 text-lg flex items-center gap-2">
+                                <i class="fas fa-exclamation-triangle"></i> HR Figyelmeztetések (Aktuális Hónap)
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <p class="text-sm text-gray-500 mb-4"><i class="fas fa-info-circle"></i> A hiányzó
+                                csippantásokat a rendszer (n8n) minden este automatikusan kiegészíti (érkezés: 07:00,
+                                távozás: 15:30).</p>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr
+                                            class="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider">
+                                            <th class="py-3 px-4 font-bold">Név</th>
+                                            <th class="py-3 px-4 font-bold">Dátum és Részletek</th>
+                                            <th class="py-3 px-4 font-bold">Hiba típusa</th>
+                                            <th class="py-3 px-4 font-bold text-center">Művelet</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="warnings-table-body" class="divide-y divide-gray-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-exports" class="hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 max-w-2xl mx-auto mt-8">
+                        <div class="flex items-center justify-center mb-6">
+                            <div
+                                class="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-3xl shadow-inner border border-blue-100">
+                                <i class="fas fa-table"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 text-center mb-2">Hó végi Exportálások</h3>
+                        <p class="text-gray-500 text-center mb-8">Generálj részletes jelenléti vagy költségtérítési
+                            listákat a kiválasztott hónapra.</p>
+
+                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 mb-8 flex flex-col items-center">
+                            <label for="export-month"
+                                class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Melyik
+                                hónapot exportáljuk?</label>
+                            <input type="month" id="export-month" onclick="this.showPicker()"
+                                class="px-6 py-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-medium text-gray-700 bg-white shadow-sm w-full max-w-sm text-center text-lg cursor-pointer transition-all">
+                        </div>
+
+                        <button id="btn-export-excel"
+                            class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 text-lg mb-4">
+                            <i class="fas fa-download"></i><span>Havi Jelenléti Mátrix (Excel) Letöltése</span>
+                        </button>
+
+                        <button id="btn-export-pdf-all"
+                            class="w-full mb-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 text-lg">
+                            <i class="fas fa-file-pdf"></i><span>Összes Dolgozói Naptár (PDF) Letöltése</span>
+                        </button>
+
+                        <button id="btn-export-pdf-matrix"
+                            class="w-full mb-4 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 text-lg">
+                            <i class="fas fa-th"></i><span>Havi Összesítő Mátrix (PDF) Letöltése</span>
+                        </button>
+
+                        <button id="btn-export-travel"
+                            class="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 text-lg">
+                            <i class="fas fa-car"></i><span>Gépkocsi Költségtérítés (PDF) Letöltése</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="view-guide" class="hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 max-w-4xl mx-auto mt-4">
+                        <div class="flex items-center gap-4 mb-8 border-b border-gray-100 pb-4">
+                            <div
+                                class="w-12 h-12 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center text-2xl shadow-inner border border-blue-100">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800">Használati Útmutató</h3>
+                                <p class="text-gray-500">Részletes leírás az adminisztrációs felület funkcióiról</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4" id="guide-accordion">
+                            <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                                <button
+                                    class="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none hover:bg-gray-100 transition-colors"
+                                    onclick="toggleGuide('guide-1', this)">
+                                    <div class="flex items-center gap-3">
+                                        <div class="bg-blue-100 p-2 rounded-lg"><i
+                                                class="fas fa-calendar-check text-blue-600 w-5 text-center text-lg"></i>
+                                        </div>
+                                        <span class="font-bold text-gray-800 text-lg">A Jelenléti Ív kezelése</span>
+                                    </div>
+                                    <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                                </button>
+                                <div id="guide-1"
+                                    class="hidden px-6 pb-6 pt-2 bg-white border-t border-gray-200 text-gray-600 space-y-4 leading-relaxed">
+                                    <p>Itt ellenőrizheted és szerkesztheted a dolgozók napi, heti vagy havi jelenlétét.
+                                        Az adatok valós időben érkeznek a tabletről.</p>
+
+                                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                        <h4 class="font-bold text-gray-800 mb-2 border-b border-gray-200 pb-1">Hogyan
+                                            tudok manuálisan beírni vagy javítani egy időpontot?</h4>
+                                        <ol class="list-decimal pl-5 space-y-2 text-sm">
+                                            <li>Kattints a jobb felső sarokban a <span
+                                                    class="bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-300 font-bold"><i
+                                                        class="fas fa-edit"></i> Szerkesztő Mód: KI</span> gombra, hogy
+                                                bekapcsoljon (narancssárga lesz).</li>
+                                            <li>Ekkor a naptár háttere szürkére vált. Kattints rá bármelyik dolgozó
+                                                adott napjára a táblázatban.</li>
+                                            <li>A felugró ablakban egyszerűen állítsd be az új Érkezési és Távozási
+                                                időt, majd kattints a <span
+                                                    class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold"><i
+                                                        class="fas fa-save"></i> Rögzít</span> gombra.</li>
+                                        </ol>
+                                    </div>
+
+                                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                        <h4 class="font-bold text-gray-800 mb-2 border-b border-gray-200 pb-1">Hogyan
+                                            írhatok be egyszerre több napra is jelenlétet (pl. visszamenőleg)?</h4>
+                                        <ol class="list-decimal pl-5 space-y-2 text-sm">
+                                            <li>Kapcsold be a <span
+                                                    class="bg-amber-500 text-white px-2 py-1 rounded font-bold"><i
+                                                        class="fas fa-edit"></i> Szerkesztő Mód: BE</span> gombot.</li>
+                                            <li>Megjelenik mellette a <span
+                                                    class="bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-200 font-bold"><i
+                                                        class="fas fa-check-square"></i> Kijelölés: KI</span> gomb.
+                                                Kattints rá, hogy bekapcsoljon (kék lesz).</li>
+                                            <li>Innentől, ha rákattintasz a naptárban a cellákra, nem ugrik fel az
+                                                ablak, hanem a cellák kék, vastag keretet kapnak (kijelölődnek).</li>
+                                            <li>Jelölj ki annyi napot, amennyit csak szeretnél (akár több dolgozónál
+                                                is).</li>
+                                            <li>Kattints a felül megjelenő zöld <span
+                                                    class="bg-green-600 text-white px-2 py-1 rounded font-bold"><i
+                                                        class="fas fa-pencil-alt"></i> X kijelölve</span> gombra.</li>
+                                            <li>Írd be a közös érkezést (pl. 07:00) és távozást (pl. 15:30), majd mentsd
+                                                el! A rendszer minden kijelölt napra rámenti ezt az időt.</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                                <button
+                                    class="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none hover:bg-gray-100 transition-colors"
+                                    onclick="toggleGuide('guide-2', this)">
+                                    <div class="flex items-center gap-3">
+                                        <div class="bg-blue-100 p-2 rounded-lg"><i
+                                                class="fas fa-users text-blue-600 w-5 text-center text-lg"></i></div>
+                                        <span class="font-bold text-gray-800 text-lg">Új dolgozó felvétele és
+                                            kártyák</span>
+                                    </div>
+                                    <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                                </button>
+                                <div id="guide-2"
+                                    class="hidden px-6 pb-6 pt-2 bg-white border-t border-gray-200 text-gray-600 space-y-4 leading-relaxed">
+                                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                        <h4 class="font-bold text-gray-800 mb-2 border-b border-gray-200 pb-1">Hogyan
+                                            vegyek fel új embert?</h4>
+                                        <p class="text-sm mb-2">Kattints a zöld <span
+                                                class="bg-green-500 text-white px-2 py-1 rounded font-bold"><i
+                                                    class="fas fa-user-plus"></i> Új Dolgozó Felvétele</span> gombra.
+                                            Meg kell adnod a nevét, és kiválasztani a listából a kártyája sorszámát (1-40). A listában csak a szabad (mások által nem használt) kártyák jelennek meg.</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                        <h4 class="font-bold text-gray-800 mb-2 border-b border-gray-200 pb-1">Mi van,
+                                            ha valaki elhagyja a kártyáját?</h4>
+                                        <p class="text-sm mb-2">NE töröld ki a dolgozót! Kattints a neve melletti kis <i
+                                                class="fas fa-edit text-blue-500"></i> ceruza ikonra. A felugró ablakban
+                                            egyszerűen válassz ki egy új, szabad kártyasorszámot, és mentsd el. A
+                                            rendszer okos: a régi kártyaszámot le fogja tiltani, de elmenti a profiljába
+                                            "Korábbi kártyák" néven.</p>
+                                    </div>
+                                    
+                                    <button type="button" id="btn-open-cards-modal" class="mt-4 bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg font-bold transition-colors border border-blue-200 flex items-center gap-2 w-full justify-center shadow-sm">
+                                        <i class="fas fa-list-ol"></i> Kártyaszámok és UID kódok megtekintése
+                                    </button>
+
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                                <button
+                                    class="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none hover:bg-gray-100 transition-colors"
+                                    onclick="toggleGuide('guide-3', this)">
+                                    <div class="flex items-center gap-3">
+                                        <div class="bg-blue-100 p-2 rounded-lg"><i
+                                                class="fas fa-user-clock text-blue-600 w-5 text-center text-lg"></i>
+                                        </div>
+                                        <span class="font-bold text-gray-800 text-lg">Távollétek (Szabadság,
+                                            Táppénz)</span>
+                                    </div>
+                                    <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                                </button>
+                                <div id="guide-3"
+                                    class="hidden px-6 pb-6 pt-2 bg-white border-t border-gray-200 text-gray-600 space-y-4 leading-relaxed">
+                                    <p>Itt előre, vagy utólag is rögzítheted a hiányzásokat, amik aztán megjelennek a
+                                        naptárban és a hó végi összesítőben is.</p>
+                                    <ul class="list-disc pl-5 space-y-2 text-sm">
+                                        <li><strong class="text-gray-800">Több nap rögzítése:</strong> Ha valaki egy
+                                            egész hetet van szabadságon, egyszerűen állítsd be a Kezdő dátumot hétfőre,
+                                            a Végdátumot pedig péntekre. A rendszer minden közbeeső napra beírja a
+                                            szabadságot. (Ha csak 1 napot hiányzik, mindkét dátum legyen ugyanaz az
+                                            adott nap).</li>
+                                        <li><strong class="text-gray-800">Típusok szűrése:</strong> A táblázat felett
+                                            látsz kis gombokat (pl. "Csak Szabadság (SZ)"). Ha ezekre rákattintasz,
+                                            kiszínesednek, és a táblázat azonnal elrejti a többi típust. Többet is
+                                            bekapcsolhatsz egyszerre! Ha átkattintasz egy másik menüpontba, ezek a
+                                            szűrők maguktól kikapcsolnak.</li>
+                                        <li><strong class="text-gray-800">Múltbeli távollétek:</strong> Alapesetben a
+                                            táblázat csak a jövőbeli, és az éppen aktuális (mai) távolléteket mutatja,
+                                            hogy ne legyen zsúfolt a lista. Ha látni akarod a régieket is, kapcsold be a
+                                            kereső melletti kapcsolót.</li>
+                                        <li><strong class="text-gray-800">Magyar Ünnepnapok gomb:</strong> Ezt a gombot
+                                            <span class="font-bold">évente csak egyszer</span> kell megnyomnod! Amikor
+                                            rákattintasz, az internetről letölti az idei év hivatalos magyar piros betűs
+                                            ünnepeit (Március 15, Húsvét, Karácsony stb.), és mindenkinél automatikusan
+                                            berögzíti a naptárba "Fizetett ünnep" néven, így neked nem kell velük
+                                            egyesével bajlódnod!</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                                <button
+                                    class="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none hover:bg-gray-100 transition-colors"
+                                    onclick="toggleGuide('guide-4', this)">
+                                    <div class="flex items-center gap-3">
+                                        <div class="bg-blue-100 p-2 rounded-lg"><i
+                                                class="fas fa-file-export text-blue-600 w-5 text-center text-lg"></i>
+                                        </div>
+                                        <span class="font-bold text-gray-800 text-lg">Hó végi Exportálások</span>
+                                    </div>
+                                    <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                                </button>
+                                <div id="guide-4"
+                                    class="hidden px-6 pb-6 pt-2 bg-white border-t border-gray-200 text-gray-600 space-y-4 leading-relaxed">
+                                    <p>Itt készítheted el a havi zárásokat a könyvelő vagy a bérszámfejtés számára.
+                                        Mindig válassz ki egy konkrét hónapot a letöltés előtt!</p>
+                                    <div class="grid md:grid-cols-2 gap-4 mt-2">
+                                        <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                                            <h4 class="font-bold text-blue-800 mb-2 flex items-center gap-2"><i
+                                                    class="fas fa-file-excel"></i> Excel Mátrix</h4>
+                                            <p class="text-sm text-gray-600">Ezt küldd a könyvelőnek! Tartalmazza a
+                                                dolgozók pontos másodperces érkezését és távozását is minden napra. Ha
+                                                túlóráztak (16:00 után mentek haza), a kerekített óra mellett azt is
+                                                pontosan feltünteti. A cellák színezve vannak a távollétek alapján.</p>
+                                        </div>
+                                        <div class="bg-purple-50/50 p-4 rounded-lg border border-purple-100">
+                                            <h4 class="font-bold text-purple-800 mb-2 flex items-center gap-2"><i
+                                                    class="fas fa-file-pdf"></i> PDF Összesítő Mátrix</h4>
+                                            <p class="text-sm text-gray-600">Ez egy nyomtatható, "faliújságra való"
+                                                A4-es áttekintő táblázat. Ezen nem szerepelnek a pontos érkezési percek,
+                                                kizárólag a ledolgozott órák száma (pl. 8ó) vagy a távollétek betűkódjai
+                                                (pl. SZ, T). A jobb szélén pedig összegzi, ki hány napot volt bent a
+                                                hónapban.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <div id="modal-overlay"
+            class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+
+        <div id="modal-employee"
+            class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4 w-full h-full hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto flex flex-col max-h-full"
+                id="modal-employee-content">
+                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-800">Új Dolgozó Felvétele</h3>
+                    <button id="btn-close-modal" class="text-gray-400 hover:text-red-500 transition-colors"><i
+                            class="fas fa-times text-xl"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto">
+                    <form id="form-employee">
+                        <div class="mb-5">
+                            <label for="emp-name" class="block text-sm font-medium text-gray-700 mb-1">Dolgozó Neve</label>
+                            <input type="text" id="emp-name" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
+                        </div>
+                        <div class="mb-5">
+                            <label for="emp-nfc" class="block text-sm font-medium text-gray-700 mb-1">Kártya Sorszáma (1-40)</label>
+                            <select id="emp-nfc" required class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none bg-white">
+                                <option value="" disabled selected>Válassz szabad kártyát...</option>
+                                </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label for="emp-city" class="block text-sm font-medium text-gray-700 mb-1">Település
+                                    (Opcionális)</label>
+                                <input type="text" id="emp-city"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"
+                                    placeholder="Vác">
+                            </div>
+                            <div>
+                                <label for="emp-distance" class="block text-sm font-medium text-gray-700 mb-1">Távolság
+                                    (km)</label>
+                                <input type="number" id="emp-distance" min="0"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"
+                                    placeholder="20">
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-3 pt-2">
+                            <button type="button" id="btn-cancel-modal"
+                                class="px-5 py-2.5 bg-gray-100 rounded-lg">Mégse</button>
+                            <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg">Mentés</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-edit-employee"
+            class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4 w-full h-full hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto flex flex-col max-h-full"
+                id="modal-edit-employee-content">
+                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-800">Dolgozó Szerkesztése</h3>
+                    <button id="btn-close-edit-modal" class="text-gray-400 hover:text-blue-500 transition-colors"><i
+                            class="fas fa-times text-xl"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto">
+                    <form id="form-edit-employee">
+                        <input type="hidden" id="edit-emp-id">
+                        <input type="hidden" id="edit-emp-old-nfc">
+                        <div class="mb-5">
+                            <label for="edit-emp-name" class="block text-sm font-medium text-gray-700 mb-1">Dolgozó Neve</label>
+                            <input type="text" id="edit-emp-name" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
+                        </div>
+                        <div class="mb-5">
+                            <label for="edit-emp-nfc" class="block text-sm font-medium text-gray-700 mb-1">Kártya Sorszáma (1-40)</label>
+                            <select id="edit-emp-nfc" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none bg-white">
+                                <option value="">Nincs kártya kiadva</option>
+                                </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label for="edit-emp-city"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Település</label>
+                                <input type="text" id="edit-emp-city"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"
+                                    placeholder="Vác">
+                            </div>
+                            <div>
+                                <label for="edit-emp-distance"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Távolság (km)</label>
+                                <input type="number" id="edit-emp-distance" min="0"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"
+                                    placeholder="20">
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-3 pt-2">
+                            <button type="button" id="btn-cancel-edit-modal"
+                                class="px-5 py-2.5 bg-gray-100 rounded-lg">Mégse</button>
+                            <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg">Mentés</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-edit-absence"
+            class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4 w-full h-full hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto flex flex-col max-h-full"
+                id="modal-edit-absence-content">
+                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-800">Távollét Szerkesztése</h3>
+                    <button id="btn-close-edit-abs-modal" class="text-gray-400 hover:text-blue-500 transition-colors"><i
+                            class="fas fa-times text-xl"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto">
+                    <form id="form-edit-absence">
+                        <input type="hidden" id="edit-abs-employee-id">
+                        <input type="hidden" id="edit-abs-old-start">
+                        <input type="hidden" id="edit-abs-old-end">
+                        <input type="hidden" id="edit-abs-old-type">
+
+                        <div class="mb-5">
+                            <label for="edit-abs-employee-name"
+                                class="block text-sm font-medium text-gray-700 mb-1">Dolgozó Neve</label>
+                            <input type="text" id="edit-abs-employee-name" readonly
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 outline-none cursor-not-allowed">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-5">
+                            <div>
+                                <label for="edit-abs-date-start"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Kezdő dátum</label>
+                                <input type="date" id="edit-abs-date-start" required onclick="this.showPicker()"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none cursor-pointer">
+                            </div>
+                            <div>
+                                <label for="edit-abs-date-end"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Végdátum</label>
+                                <input type="date" id="edit-abs-date-end" required onclick="this.showPicker()"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none cursor-pointer">
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <label for="edit-abs-type" class="block text-sm font-medium text-gray-700 mb-1">Távollét
+                                Típusa</label>
+                            <select id="edit-abs-type" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none bg-white">
+                                <option value="Szabadság">Szabadság (SZ)</option>
+                                <option value="Táppénz">Táppénz (T)</option>
+                                <option value="Betegszabadság">Betegszabadság (BSZ)</option>
+                                <option value="Fizetett ünnep">Fizetett ünnep (FÜ)</option>
+                                <option value="Fizetés nélküli szabadság">Fizetés nélküli szabadság (FN)</option>
+                                <option value="Igazolt nem fizetett távollét">Igazolt nem fizetett távollét (NF)
+                                </option>
+                                <option value="Igazolt fizetett távollét">Igazolt fizetett távollét (IF)</option>
+                                <option value="Kiküldetés">Kiküldetés (K)</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-end gap-3 pt-2">
+                            <button type="button" id="btn-cancel-edit-abs-modal"
+                                class="px-5 py-2.5 bg-gray-100 rounded-lg">Mégse</button>
+                            <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg">Mentés</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-edit-attendance"
+            class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4 w-full h-full hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto flex flex-col"
+                id="modal-edit-attendance-content">
+                <div
+                    class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-blue-50 rounded-t-2xl">
+                    <h3 class="text-lg font-bold text-blue-900"><i class="fas fa-clock mr-2 text-blue-500"></i>Időpont
+                        szerkesztése</h3>
+                    <button id="btn-close-edit-att-modal" class="text-gray-400 hover:text-red-500 transition-colors"><i
+                            class="fas fa-times text-xl"></i></button>
+                </div>
+                <div class="p-6">
+                    <form id="form-edit-attendance">
+                        <input type="hidden" id="edit-att-emp-id">
+                        <input type="hidden" id="edit-att-doc-id">
+
+                        <div id="bulk-edit-info"
+                            class="hidden mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg text-sm font-bold text-center border border-blue-200">
+                            Több nap egyidejű módosítása!
+                        </div>
+
+                        <div id="single-edit-info">
+                            <div class="mb-4">
+                                <label
+                                    class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Dolgozó</label>
+                                <input type="text" id="edit-att-emp-name" readonly
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-medium outline-none">
+                            </div>
+                            <div class="mb-5">
+                                <label
+                                    class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Dátum</label>
+                                <input type="date" id="edit-att-date" readonly
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-medium outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label for="edit-att-arrival"
+                                    class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Érkezés</label>
+                                <input type="time" id="edit-att-arrival" onclick="this.showPicker()"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-green-700 cursor-pointer">
+                            </div>
+                            <div>
+                                <label for="edit-att-departure"
+                                    class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Távozás</label>
+                                <input type="time" id="edit-att-departure" onclick="this.showPicker()"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-700 cursor-pointer">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
+                            <button type="button" id="btn-cancel-edit-att-modal"
+                                class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors">Mégse</button>
+                            <button type="submit"
+                                class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
+                                <i class="fas fa-save"></i> Rögzít
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-card-codes" class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4 w-full h-full hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto flex flex-col max-h-full" id="modal-card-codes-content">
+                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
+                    <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-id-badge text-blue-500 mr-2"></i> Kártyaszámok és UID kódok</h3>
+                    <button id="btn-close-cards-modal" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
+                </div>
+                <div class="p-0 overflow-y-auto flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-white shadow-sm z-10">
+                            <tr class="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider">
+                                <th class="py-3 px-6 border-b border-gray-200">Kártya Sorszáma</th>
+                                <th class="py-3 px-6 border-b border-gray-200">UID Kód (NFC)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="card-codes-tbody" class="divide-y divide-gray-100 text-sm">
+                            </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-gray-100 flex justify-end flex-shrink-0">
+                     <button id="btn-close-cards-modal-bottom" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm">Bezárás</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-worker-profile"
+            class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4 w-full h-full hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto flex flex-col max-h-[90vh]"
+                id="modal-worker-profile-content">
+                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start flex-shrink-0">
+                    <div class="flex items-center gap-4">
+                        <div id="wp-monogram"
+                            class="w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl shadow-sm ring-4 ring-white">
+                            ?</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800" id="wp-name">Dolgozó Neve</h3>
+                            <div class="flex items-center gap-3 mt-1">
+                                <span
+                                    class="font-medium text-sm text-gray-600 bg-gray-50 px-2.5 py-1 rounded-md border border-gray-200 flex items-center gap-1.5"><i
+                                        class="fas fa-id-card text-gray-400"></i> Kártya sorszáma: <span id="wp-nfc">-</span></span>
+                                <div id="wp-status"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-sm font-medium shadow-sm">
+                                    <span class="w-2 h-2 rounded-full status-dot"></span><span
+                                        class="status-text">Státusz</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 border-t border-gray-100 pt-3">
+                                <h5 class="text-xs font-bold text-gray-500 uppercase flex items-center gap-1.5 mb-2"><i
+                                        class="fas fa-id-card-alt"></i> Korábbi kártya sorszámok</h5>
+                                <div id="wp-nfc-history" class="space-y-1 max-h-24 overflow-y-auto pr-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <button id="btn-print-profile" onclick="window.print()"
+                            class="text-blue-500 hover:text-blue-700 bg-blue-50 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                            title="Nyomtatás / PDF letöltés"><i class="fas fa-print"></i></button>
+                        <button id="btn-close-wp-modal"
+                            class="text-gray-400 hover:text-red-500 bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i
+                                class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="p-6 overflow-y-auto bg-gray-50 flex-1">
+                    <div
+                        class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i
+                                class="fas fa-calendar-alt text-blue-500"></i> Dolgozói Profil Naptár</h4>
+                        <div class="flex items-center gap-3">
+                            <label for="wp-month" class="text-sm font-medium text-gray-600">Hónap:</label>
+                            <input type="month" id="wp-month" onclick="this.showPicker()"
+                                class="px-4 py-2 border border-gray-300 rounded-lg outline-none font-medium bg-gray-50 cursor-pointer">
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
+                        <div id="wp-calendar-loading"
+                            class="absolute inset-0 bg-white/80 z-10 flex items-center justify-center hidden"><i
+                                class="fas fa-circle-notch fa-spin text-blue-500 text-3xl"></i></div>
+                        <div class="grid grid-cols-7 border-b border-gray-100 bg-gray-50">
+                            <div class="py-3 text-center text-sm font-bold text-gray-600">Hétfő</div>
+                            <div class="py-3 text-center text-sm font-bold text-gray-600">Kedd</div>
+                            <div class="py-3 text-center text-sm font-bold text-gray-600">Szerda</div>
+                            <div class="py-3 text-center text-sm font-bold text-gray-600">Csütörtök</div>
+                            <div class="py-3 text-center text-sm font-bold text-gray-600">Péntek</div>
+                            <div class="py-3 text-center text-sm font-bold text-red-500">Szombat</div>
+                            <div class="py-3 text-center text-sm font-bold text-red-500">Vasárnap</div>
+                        </div>
+                        <div id="wp-calendar-grid" class="grid grid-cols-7 auto-rows-fr bg-gray-200 gap-[1px]"></div>
+                    </div>
+
+                    <div class="mt-6">
+                        <h5 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 text-center">
+                            Jelmagyarázat</h5>
+                        <div class="flex flex-wrap gap-3 justify-center" id="wp-legend"></div>
+                    </div>
+
+                    <div class="mt-8 border-t border-gray-100 pt-6">
+                        <h5 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4"><i
+                                class="fas fa-history text-gray-400 mr-1"></i> Távolléti előzmények (Összesített)</h5>
+                        <div id="wp-absences-list" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="batch-print-container" class="hidden"></div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const todayFormatted = new Date().toLocaleDateString('hu-HU', options);
+            document.getElementById('current-date').textContent = todayFormatted.charAt(0).toUpperCase() + todayFormatted.slice(1);
+        });
+
+        window.toggleGuide = function (id, btn) {
+            const content = document.getElementById(id);
+            const icon = btn.querySelector('.fa-chevron-down');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+                btn.classList.add('bg-gray-100');
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+                btn.classList.remove('bg-gray-100');
+            }
+        }
+    </script>
+</body>
+
+</html>
