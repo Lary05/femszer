@@ -1994,3 +1994,106 @@ if (btnExportTravel) {
         }
     });
 }
+
+// -------------------------------------------------------------------------
+// NAPI JELENLÉTI ANOMÁLIÁK ELLENŐRZÉSE (ÉRTESÍTŐ MODAL)
+// -------------------------------------------------------------------------
+window.checkDailyAnomalies = function(dolgozok, napiJelenletek) {
+    const modal = document.getElementById('system-alert-modal');
+    if (!modal) return;
+
+    const sectionCorrected = document.getElementById('alert-section-corrected');
+    const listCorrected = document.getElementById('alert-list-corrected');
+    const sectionMissing = document.getElementById('alert-section-missing');
+    const listMissing = document.getElementById('alert-list-missing');
+
+    listCorrected.innerHTML = '';
+    listMissing.innerHTML = '';
+    
+    let hasCorrected = false;
+    let hasMissing = false;
+
+    // 1. Kikeresi a korrigáltakat (auto_ flagek alapján)
+    napiJelenletek.forEach(jelenlet => {
+        if (jelenlet.auto_becsekkolas || jelenlet.auto_kicsekkolas || jelenlet.auto_korrekcio) {
+            hasCorrected = true;
+            let typeText = [];
+            if (jelenlet.auto_becsekkolas || jelenlet.auto_korrekcio) typeText.push("Reggeli érkezés pótolva");
+            if (jelenlet.auto_kicsekkolas) typeText.push("Délutáni távozás pótolva");
+            
+            const li = document.createElement('li');
+            li.className = "bg-amber-50 border border-amber-100 rounded-lg p-3 flex justify-between items-center";
+            li.innerHTML = `
+                <span class="font-bold text-gray-800">${jelenlet.name}</span>
+                <span class="text-sm font-medium text-amber-700 bg-amber-100 px-2.5 py-1 rounded-md">${typeText.join(' és ')}</span>
+            `;
+            listCorrected.appendChild(li);
+        }
+    });
+
+    // 2. Kikeresi a hiányzókat (aktív dolgozó, akinek nincs mai adata)
+    dolgozok.forEach(dolgozo => {
+        if (dolgozo.status !== "Archivált") {
+            const hasData = napiJelenletek.some(j => j.name === dolgozo.name);
+            if (!hasData) {
+                hasMissing = true;
+                const li = document.createElement('li');
+                li.className = "bg-red-50 border border-red-100 rounded-lg p-3 flex items-center gap-3";
+                li.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0"><i class="fas fa-user-slash"></i></div>
+                    <span class="font-bold text-gray-800">${dolgozo.name}</span>
+                `;
+                listMissing.appendChild(li);
+            }
+        }
+    });
+
+    // =========================================================================
+    // 🚨 TESZT MÓD KEZDETE (ÉLESÍTÉSKOR EZT A BLOKKOT TÖRÖLD VAGY KOMMENTELD KI!) 🚨
+    // =========================================================================
+    hasCorrected = true;
+    hasMissing = true;
+    
+    // Teszt adat a javított időkhöz, ha üres lenne
+    if (listCorrected.children.length === 0) {
+        const testLi1 = document.createElement('li');
+        testLi1.className = "bg-amber-50 border border-amber-100 rounded-lg p-3 flex justify-between items-center";
+        testLi1.innerHTML = `
+            <span class="font-bold text-gray-800">Teszt Elek (Demo)</span>
+            <span class="text-sm font-medium text-amber-700 bg-amber-100 px-2.5 py-1 rounded-md">Reggeli érkezés pótolva</span>
+        `;
+        listCorrected.appendChild(testLi1);
+    }
+    
+    // Teszt adat a hiányzókhoz, ha üres lenne
+    if (listMissing.children.length === 0) {
+        const testLi2 = document.createElement('li');
+        testLi2.className = "bg-red-50 border border-red-100 rounded-lg p-3 flex items-center gap-3";
+        testLi2.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0"><i class="fas fa-user-slash"></i></div>
+            <span class="font-bold text-gray-800">Teszt Béla (Demo)</span>
+        `;
+        listMissing.appendChild(testLi2);
+    }
+    // =========================================================================
+    // 🚨 TESZT MÓD VÉGE 🚨
+    // =========================================================================
+
+    // Megjelenítés vezérlése
+    if (hasCorrected) {
+        sectionCorrected.classList.remove('hidden');
+    } else {
+        sectionCorrected.classList.add('hidden');
+    }
+
+    if (hasMissing) {
+        sectionMissing.classList.remove('hidden');
+    } else {
+        sectionMissing.classList.add('hidden');
+    }
+
+    // Ha van legalább egy hiba, megjelenítjük a Modalt
+    if (hasCorrected || hasMissing) {
+        modal.classList.remove('hidden');
+    }
+};
