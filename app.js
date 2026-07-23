@@ -45,9 +45,9 @@ function getCardNumberByUid(uid) {
 function populateAvailableCards(selectId, currentUid = null) {
     const select = document.getElementById(selectId);
     if (!select) return;
-    
+
     select.innerHTML = '<option value="" disabled selected>Válassz szabad kártyát...</option>';
-    if(selectId === 'edit-emp-nfc') {
+    if (selectId === 'edit-emp-nfc') {
         select.innerHTML += '<option value="">Nincs kártya kiadva</option>';
     }
 
@@ -57,7 +57,7 @@ function populateAvailableCards(selectId, currentUid = null) {
     for (let i = 1; i <= 40; i++) {
         if (i === 6) continue; // 6-os kártya kihagyása
         const uid = cardMapping[i];
-        
+
         // Ha a kártya szabad, VAGY ez az ember jelenlegi kártyája, akkor bekerül a listába
         if (!activeUids.includes(uid) || uid === currentUid) {
             const opt = document.createElement('option');
@@ -86,27 +86,36 @@ function toDbDate(d) { return d ? d.replace(/-/g, '.') : ""; }
 function fromDbDate(d) { return d ? d.replace(/\./g, '-') : ""; }
 
 // OKOS MUNKAIDŐ ÉS TÚLÓRA KEREKÍTÉS LOGIKA (SMART ROUNDING)
+// OKOS MUNKAIDŐ ÉS TÚLÓRA KEREKÍTÉS LOGIKA (SMART ROUNDING)
 function calculateSmartHours(arr, dep) {
     if (!arr || !dep || dep === "-") return "";
     const [arrH, arrM] = arr.split(':').map(Number);
     const [depH, depM] = dep.split(':').map(Number);
 
-    const depTotalMins = (depH * 60) + depM;
-    const limitMins = (14 * 60) + 45; // 14:45 kerekítési határ
-    const overtimeStartMins = (16 * 60) + 0; // 16:00
+    let arrTotalMins = (arrH * 60) + arrM;
+    let depTotalMins = (depH * 60) + depM;
 
-    let baseText = "";
-    if (depTotalMins <= limitMins) baseText = "7ó 0p";
-    else baseText = "8ó 0p";
-
-    if (depTotalMins > overtimeStartMins) {
-        const overtimeMins = depTotalMins - overtimeStartMins;
-        const otH = Math.floor(overtimeMins / 60);
-        const otM = overtimeMins % 60;
-        return `${baseText} (+${otH}ó ${String(otM).padStart(2, '0')}p túlóra)`;
+    // Éjszakai műszak / éjfél utáni távozás kezelése
+    if (depTotalMins < arrTotalMins) {
+        depTotalMins += 24 * 60;
     }
 
-    return baseText;
+    // Ténylegesen ledolgozott idő percben
+    const diffMins = depTotalMins - arrTotalMins;
+
+    // Kerekítés a legközelebbi egész órára
+    const totalRoundedHours = Math.round(diffMins / 60);
+
+    // Alap munkaidő (maximum 8 óra) és túlóra szétválasztása
+    const baseHours = Math.min(totalRoundedHours, 8);
+    const overtimeHours = Math.max(0, totalRoundedHours - 8);
+
+    let result = `${baseHours}ó 0p`;
+    if (overtimeHours > 0) {
+        result += ` (+${overtimeHours}ó 00p túlóra)`;
+    }
+
+    return result;
 }
 
 // UI LOGIC & ROUTING
@@ -207,8 +216,8 @@ async function fetchAndRenderWarnings() {
                 const tav = tavArr.find(t => t.dolgozoId === emp.id && t.datum === dateStr);
 
                 if (att) {
-                    if (att.departure === "-") warnings.push({ empId: emp.id, docId: att.id, name: emp.name, date: dateStr, arr: att.arrival, dep: "", hasAbsence: tav ? 'true':'false', detail: `Érkezés: ${att.arrival}`, type: "Hiányzó távozás", color: "bg-amber-100 text-amber-800" });
-                    else if (att.arrival === "-") warnings.push({ empId: emp.id, docId: att.id, name: emp.name, date: dateStr, arr: "", dep: att.departure, hasAbsence: tav ? 'true':'false', detail: `Távozás: ${att.departure}`, type: "Hiányzó érkezés", color: "bg-amber-100 text-amber-800" });
+                    if (att.departure === "-") warnings.push({ empId: emp.id, docId: att.id, name: emp.name, date: dateStr, arr: att.arrival, dep: "", hasAbsence: tav ? 'true' : 'false', detail: `Érkezés: ${att.arrival}`, type: "Hiányzó távozás", color: "bg-amber-100 text-amber-800" });
+                    else if (att.arrival === "-") warnings.push({ empId: emp.id, docId: att.id, name: emp.name, date: dateStr, arr: "", dep: att.departure, hasAbsence: tav ? 'true' : 'false', detail: `Távozás: ${att.departure}`, type: "Hiányzó érkezés", color: "bg-amber-100 text-amber-800" });
                 } else if (!tav && !isWknd) {
                     warnings.push({ empId: emp.id, docId: null, name: emp.name, date: dateStr, arr: "", dep: "", hasAbsence: 'false', detail: "Nincs adat", type: "Igazolatlan hiányzás", color: "bg-red-100 text-red-800" });
                 }
@@ -224,7 +233,7 @@ async function fetchAndRenderWarnings() {
         } else {
             warnings.forEach(w => {
                 const editBtn = `<button onclick="window.handleAttEditClick(null, '${w.empId}', '${w.name}', '${w.date}', '${w.hasAbsence}', '${w.arr}', '${w.dep}', '${w.docId || ''}')" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded shadow-sm border border-blue-200 hover:bg-blue-600 hover:text-white transition-colors text-xs font-bold w-full"><i class="fas fa-edit"></i> Pótlás</button>`;
-                
+
                 tbody.innerHTML += `<tr class="hover:bg-gray-50 border-b border-gray-100">
                     <td class="py-3 px-4 font-medium text-gray-800">${w.name}</td>
                     <td class="py-3 px-4 text-gray-600">${w.date.replace(/-/g, '.')} <span class="text-xs text-gray-400 ml-2">(${w.detail})</span></td>
@@ -242,26 +251,26 @@ async function fetchAndRenderWarnings() {
 let allEmployees = [];
 let showArchivedEmployees = false;
 
-function openModal() { 
+function openModal() {
     populateAvailableCards('emp-nfc'); // Megnyitáskor feltölti a kártyákat
-    document.getElementById('modal-overlay').classList.remove('hidden', 'opacity-0'); 
-    document.getElementById('modal-employee').classList.remove('hidden'); 
-    document.getElementById('modal-employee-content').classList.remove('opacity-0', 'scale-95'); 
-    document.getElementById('modal-employee-content').classList.add('opacity-100', 'scale-100'); 
+    document.getElementById('modal-overlay').classList.remove('hidden', 'opacity-0');
+    document.getElementById('modal-employee').classList.remove('hidden');
+    document.getElementById('modal-employee-content').classList.remove('opacity-0', 'scale-95');
+    document.getElementById('modal-employee-content').classList.add('opacity-100', 'scale-100');
 }
 
-function closeModal() { 
-    document.getElementById('modal-overlay').classList.add('opacity-0'); 
-    document.getElementById('modal-employee-content').classList.remove('opacity-100', 'scale-100'); 
-    document.getElementById('modal-employee-content').classList.add('opacity-0', 'scale-95'); 
-    setTimeout(() => { 
-        document.getElementById('modal-overlay').classList.add('hidden'); 
-        document.getElementById('modal-employee').classList.add('hidden'); 
-        document.getElementById('form-employee').reset(); 
-    }, 300); 
+function closeModal() {
+    document.getElementById('modal-overlay').classList.add('opacity-0');
+    document.getElementById('modal-employee-content').classList.remove('opacity-100', 'scale-100');
+    document.getElementById('modal-employee-content').classList.add('opacity-0', 'scale-95');
+    setTimeout(() => {
+        document.getElementById('modal-overlay').classList.add('hidden');
+        document.getElementById('modal-employee').classList.add('hidden');
+        document.getElementById('form-employee').reset();
+    }, 300);
 }
-document.getElementById('btn-new-employee')?.addEventListener('click', openModal); 
-document.getElementById('btn-close-modal')?.addEventListener('click', closeModal); 
+document.getElementById('btn-new-employee')?.addEventListener('click', openModal);
+document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
 document.getElementById('btn-cancel-modal')?.addEventListener('click', closeModal);
 
 document.getElementById('form-employee')?.addEventListener('submit', async (e) => {
@@ -299,23 +308,23 @@ window.openEditEmployeeModal = function (empId) {
 
     document.getElementById('modal-overlay').classList.remove('hidden', 'opacity-0');
     document.getElementById('modal-edit-employee').classList.remove('hidden');
-    requestAnimationFrame(() => { 
-        document.getElementById('modal-edit-employee-content').classList.remove('opacity-0', 'scale-95'); 
-        document.getElementById('modal-edit-employee-content').classList.add('opacity-100', 'scale-100'); 
+    requestAnimationFrame(() => {
+        document.getElementById('modal-edit-employee-content').classList.remove('opacity-0', 'scale-95');
+        document.getElementById('modal-edit-employee-content').classList.add('opacity-100', 'scale-100');
     });
 };
 
-function closeEditModal() { 
-    document.getElementById('modal-overlay').classList.add('opacity-0'); 
-    document.getElementById('modal-edit-employee-content').classList.remove('opacity-100', 'scale-100'); 
-    document.getElementById('modal-edit-employee-content').classList.add('opacity-0', 'scale-95'); 
-    setTimeout(() => { 
-        document.getElementById('modal-overlay').classList.add('hidden'); 
-        document.getElementById('modal-edit-employee').classList.add('hidden'); 
-        document.getElementById('form-edit-employee').reset(); 
-    }, 300); 
+function closeEditModal() {
+    document.getElementById('modal-overlay').classList.add('opacity-0');
+    document.getElementById('modal-edit-employee-content').classList.remove('opacity-100', 'scale-100');
+    document.getElementById('modal-edit-employee-content').classList.add('opacity-0', 'scale-95');
+    setTimeout(() => {
+        document.getElementById('modal-overlay').classList.add('hidden');
+        document.getElementById('modal-edit-employee').classList.add('hidden');
+        document.getElementById('form-edit-employee').reset();
+    }, 300);
 }
-document.getElementById('btn-close-edit-modal')?.addEventListener('click', closeEditModal); 
+document.getElementById('btn-close-edit-modal')?.addEventListener('click', closeEditModal);
 document.getElementById('btn-cancel-edit-modal')?.addEventListener('click', closeEditModal);
 
 document.getElementById('form-edit-employee')?.addEventListener('submit', async (e) => {
@@ -344,20 +353,20 @@ document.getElementById('form-edit-employee')?.addEventListener('submit', async 
 });
 
 // GLOBÁLIS ARCHIVÁLÁS ÉS VISSZAÁLLÍTÁS FUNKCIÓK
-window.archiveEmployee = async function(empId) {
+window.archiveEmployee = async function (empId) {
     window.event.stopPropagation();
-    const result = await Swal.fire({ title: 'Archiválás', text: "Biztosan archiválod? A kártyája felszabadul.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#3085d6', confirmButtonText: 'Igen' }); 
-    if (result.isConfirmed) { 
-        const emp = allEmployees.find(e => e.id === empId); 
-        const oldCards = emp.korabbiKartyak || []; 
-        if (emp.nfc) oldCards.push({ card: emp.nfc, date: new Date().toISOString() }); 
-        await updateDoc(doc(db, "dolgozok", empId), { status: "Archivált", archivalasDatuma: serverTimestamp(), nfc: "", korabbiKartyak: oldCards }); 
+    const result = await Swal.fire({ title: 'Archiválás', text: "Biztosan archiválod? A kártyája felszabadul.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#3085d6', confirmButtonText: 'Igen' });
+    if (result.isConfirmed) {
+        const emp = allEmployees.find(e => e.id === empId);
+        const oldCards = emp.korabbiKartyak || [];
+        if (emp.nfc) oldCards.push({ card: emp.nfc, date: new Date().toISOString() });
+        await updateDoc(doc(db, "dolgozok", empId), { status: "Archivált", archivalasDatuma: serverTimestamp(), nfc: "", korabbiKartyak: oldCards });
     }
 }
 
-window.restoreEmployee = async function(empId) {
+window.restoreEmployee = async function (empId) {
     window.event.stopPropagation();
-    const result = await Swal.fire({ title: 'Visszaállítás', icon: 'question', showCancelButton: true, confirmButtonText: 'Igen' }); 
+    const result = await Swal.fire({ title: 'Visszaállítás', icon: 'question', showCancelButton: true, confirmButtonText: 'Igen' });
     if (result.isConfirmed) await updateDoc(doc(db, "dolgozok", empId), { status: "Aktív", archivalasDatuma: null });
 }
 
@@ -1201,9 +1210,9 @@ const btnCloseCardsBottom = document.getElementById('btn-close-cards-modal-botto
 function openCardsModal() {
     const tbody = document.getElementById('card-codes-tbody');
     tbody.innerHTML = '';
-    
-    for(let i=1; i<=40; i++) {
-        if(i === 6) continue;
+
+    for (let i = 1; i <= 40; i++) {
+        if (i === 6) continue;
         const uid = cardMapping[i];
         tbody.innerHTML += `
         <tr class="hover:bg-blue-50 transition-colors">
@@ -1776,11 +1785,18 @@ if (btnExportPdfMatrix) {
 
             const getShortHours = (arr, dep) => {
                 if (!arr || !dep || dep === "-") return "";
-                const depTotalMins = (Number(dep.split(':')[0]) * 60) + Number(dep.split(':')[1]);
-                let hrs = depTotalMins <= ((14 * 60) + 45) ? 7 : 8;
-                const otStart = (16 * 60);
-                if (depTotalMins > otStart) hrs += Math.floor((depTotalMins - otStart) / 60);
-                return `${hrs}ó`;
+                const [arrH, arrM] = arr.split(':').map(Number);
+                const [depH, depM] = dep.split(':').map(Number);
+
+                let arrTotalMins = (arrH * 60) + arrM;
+                let depTotalMins = (depH * 60) + depM;
+
+                // Éjszakai műszak / éjfél utáni távozás kezelése
+                if (depTotalMins < arrTotalMins) depTotalMins += 24 * 60;
+
+                // Tényleges idő különbség kerekítve egész órára
+                const totalRoundedHours = Math.round((depTotalMins - arrTotalMins) / 60);
+                return `${totalRoundedHours}ó`;
             };
 
             let grandTotals = { munka: 0, sz: 0, t: 0, bsz: 0, fu: 0, fn: 0, ip: 0 };
@@ -1998,7 +2014,7 @@ if (btnExportTravel) {
 // -------------------------------------------------------------------------
 // NAPI JELENLÉTI ANOMÁLIÁK ELLENŐRZÉSE (ÉRTESÍTŐ MODAL)
 // -------------------------------------------------------------------------
-window.checkDailyAnomalies = function(dolgozok, napiJelenletek) {
+window.checkDailyAnomalies = function (dolgozok, napiJelenletek) {
     const modal = document.getElementById('system-alert-modal');
     if (!modal) return;
 
@@ -2009,7 +2025,7 @@ window.checkDailyAnomalies = function(dolgozok, napiJelenletek) {
 
     listCorrected.innerHTML = '';
     listMissing.innerHTML = '';
-    
+
     let hasCorrected = false;
     let hasMissing = false;
 
@@ -2020,7 +2036,7 @@ window.checkDailyAnomalies = function(dolgozok, napiJelenletek) {
             let typeText = [];
             if (jelenlet.auto_becsekkolas || jelenlet.auto_korrekcio) typeText.push("Reggeli érkezés pótolva");
             if (jelenlet.auto_kicsekkolas) typeText.push("Délutáni távozás pótolva");
-            
+
             const li = document.createElement('li');
             li.className = "bg-amber-50 border border-amber-100 rounded-lg p-3 flex justify-between items-center";
             li.innerHTML = `
@@ -2053,7 +2069,7 @@ window.checkDailyAnomalies = function(dolgozok, napiJelenletek) {
     // =========================================================================
     hasCorrected = true;
     hasMissing = true;
-    
+
     // Teszt adat a javított időkhöz, ha üres lenne
     if (listCorrected.children.length === 0) {
         const testLi1 = document.createElement('li');
@@ -2064,7 +2080,7 @@ window.checkDailyAnomalies = function(dolgozok, napiJelenletek) {
         `;
         listCorrected.appendChild(testLi1);
     }
-    
+
     // Teszt adat a hiányzókhoz, ha üres lenne
     if (listMissing.children.length === 0) {
         const testLi2 = document.createElement('li');
