@@ -103,19 +103,11 @@ function calculateSmartHours(arr, dep) {
     // Ténylegesen ledolgozott idő percben
     const diffMins = depTotalMins - arrTotalMins;
 
-    // Kerekítés a legközelebbi egész órára
-    const totalRoundedHours = Math.round(diffMins / 60);
+    // Pontos óra és perc kiszámítása kerekítés nélkül
+    const hours = Math.floor(diffMins / 60);
+    const mins = diffMins % 60;
 
-    // Alap munkaidő (maximum 8 óra) és túlóra szétválasztása
-    const baseHours = Math.min(totalRoundedHours, 8);
-    const overtimeHours = Math.max(0, totalRoundedHours - 8);
-
-    let result = `${baseHours}ó 0p`;
-    if (overtimeHours > 0) {
-        result += ` (+${overtimeHours}ó 00p túlóra)`;
-    }
-
-    return result;
+    return `${hours}ó ${mins}p`;
 }
 
 // UI LOGIC & ROUTING
